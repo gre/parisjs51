@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Functional Rendering in React</title>
+
+		<base target="_blank">
+
+		<meta name="description" content="Functional Rendering in React – gl-react and gl-react-native">
+		<meta name="author" content="Gaëtan Renaudeau">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/sky.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+<section data-markdown><script type="text/template">
+# gl-react
+
+<br />
+
+- *demo* (10 min)
+- *Under the hood* (10 min)
+- *questions* (5 min)
+
+<br />
+
+## @greweb
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Imperative → Functional
+
+- **DOM → Virtual DOM** *react*
+- **WebGL → Virtual GL** *gl-react*
+
+> <!-- .element: class="fragment" style="font-size:0.6em" --> The same way we moved from DOM to VDOM with `react`,
+We can move from tedious WebGL setup code to a productive,
+descriptive and functional abstraction,
+**without hiding the underneath technology**.
+
+```html
+<Blur>
+  <NegativeColor>
+    <video ... />
+  </NegativeColor>
+</Blur>
+```
+<!-- .element: class="fragment" style="font-size:0.6em" -->
+
+</script></section>
+
+<section data-markdown>
+## Fragment Shader
+
+Each pipeline brick is a function from pixels to colors...
+
+## `{x,y} => {r,g,b,a}`
+
+...implemented in a **Fragment Shader**.
+</section>
+
+<section data-markdown>
+	# DEMOS !
+</section>
+
+<section>
+<section data-markdown>
+	## Shared node optimization
+</section>
+<section data-markdown><script type="text/template">
+### Duplicate nodes
+
+```html
+<Add>
+	<HelloGL blue={0.5} />
+	<HelloGL blue={0.5} />
+</Add>
+```
+
+![](./images/gpip6Ya.png)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Shared node
+
+```html
+const helloGL = <HelloGL blue={0.5} />;
+
+<Add width={w} height={h}>
+	{helloGL}
+	{helloGL}
+</Add>
+```
+
+factorizing the render tree minimizes the render cost.
+
+![](./images/7EkBzf4.png)
+<!-- .element: height="200" -->
+
+*(Most of the time, you don't have to use a variable)*
+</script></section>
+
+<section data-markdown><script type="text/template">
+### How it works
+
+**Referencial transparency of VDOM elements**:
+If the reference of a VDOM element is found multiple time in the tree,
+algorithm factorizes it to **render it once**.
+
+> <!-- .element: class="fragment" style="font-size:0.8em" --> optimization not built-in in React (DOM).
+Only makes sense in WebGL context:
+factorizing 2 branchs of the tree **saves extra computation time**.
+
+</script></section>
+</section>
+
+<section>
+<section data-markdown><script type="text/template">
+## gl-react-native
+
+**Native Implementation** for iOS and Android!
+
+Both uses **OpenGL ES**.
+
+<a href="https://twitter.com/greweb/status/668901753966997504">
+	<img src="images/CUhqmYxWEAEvd93.jpg" />
+</a>
+
+</script></section>
+
+<section data-markdown><script type="text/template">
+![](images/advancedeffects.gif)
+<!-- .element: height="500" -->
+
+A crazy demo that runs at 60 FPS. (on iOS)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Effect on texts !
+
+![](./images/3.gif)
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Effect over UI !
+
+![](./images/8.gif)
+
+We can **rasterize native views to texture**.
+
+*Too bad we can't do this with DOM...*
+</script></section>
+
+<section data-markdown><script type="text/template">
+### Complex UI
+
+![](./images/4.gif)
+
+![](./images/5.gif)
+</script></section>
+
+</section>
+
+<section>
+<section data-markdown><script type="text/template">
+## Future direction
+</script></section>
+<section data-markdown><script type="text/template">
+### Better API
+
+split `GL.View` into **`GL.Surface`** and **`GL.Node`**.
+
+- <!-- .element: class="fragment" --> better **separation of concerns**, currently you are forced to put uniforms in the top level `GL.View`.
+- <!-- .element: class="fragment" --> `gl-react` abstracted of any plateform-specific and allow to **write universal effects more easily**.
+
+> <!-- .element: class="fragment" --> **Status: Implemented**, but eagerly waiting [*React Native* to depends on *React*](https://github.com/facebook/react-native/issues/2985).
+</script></section>
+<section data-markdown><script type="text/template">
+### Android implementation
+
+**To be released soon!!!**
+</script></section>
+<section data-markdown><script type="text/template">
+### Better tooling
+
+![](./images/inspector.png)
+<!-- .element: height="300" -->
+
+**`gl-react-inspector`**: Work in Progress
+
+- <!-- .element: class="fragment" --> How to actually make it a plugin for React Devtools?
+- <!-- .element: class="fragment" --> Implement support for React Native
+</script></section>
+<section data-markdown><script type="text/template">
+### More features
+
+see issues created on Github:
+
+- [ProjectSeptemberInc/gl-react](https://github.com/ProjectSeptemberInc/gl-react)
+- [ProjectSeptemberInc/gl-react-native](https://github.com/ProjectSeptemberInc/gl-react-native)
+</script></section>
+<section data-markdown><script type="text/template">
+### More Open Subjects
+
+We<!-- .element: class="fragment" --> focused on 2D effects with hardcoded *Vertex Shader*.
+
+We<!-- .element: class="fragment" --> can try to be more generic, but this involves a bit of work especially for the React Native implementation.
+
+For<!-- .element: class="fragment" --> more advanced use-cases like 3D models, we recommend to directly use the OpenGL / WebGL API.
+</script></section>
+</section>
+
+<section data-markdown><script type="text/template">
+## More demos
+
+- [http://projectseptemberinc.github.io/gl-react/](http://projectseptemberinc.github.io/gl-react/)
+- [http://greweb.me/gl-react-inspector-examples/](http://greweb.me/gl-react-inspector-examples/)
+</script></section>
+
+<section>
+<section data-markdown>
+# Wrap Up
+</section>
+<section data-markdown>
+## WebGL API
+### hybrid paradigms
+
+WebGL is a very low level **imperative** API...
+but fundamentally uses **functional** bricks.
+</section>
+<section data-markdown>
+## fragment shader
+
+How to draw things in WebGL:
+
+### `{x,y} => {r,g,b,a}`
+
+### *"Functional Rendering"*
+</section>
+<section data-markdown><script type="text/template">
+### gl-react
+
+**a wrapper that hides WebGL complexity.**
+
+like how React hides the stateful imperative DOM API
+
+```html
+<Blur>
+  <NegativeColor>
+    <video ... />
+  </NegativeColor>
+</Blur>
+```
+
+> WebGL as easy as composing React components.
+<!-- .element: style="font-size: 0.6em" -->
+
+**Our current focus: making (2D) effects.**
+</script></section>
+<section data-markdown>
+### gl-react-native
+
+The same wrapper on top of **OpenGL** for React Native.
+
+Write universal effects for both the Web and Native.
+</section>
+</section>
+
+<section data-markdown><script type="text/template">
+## [@greweb](https://twitter.com/greweb)
+
+# THA ![](./images/92oymNde_400x400.jpg)<!-- .element: style="height:300px; vertical-align: middle" --> NKS
+
+working at [Project September](https://twitter.com/ProjSeptEng).
+
+http://greweb.me/parisjs51
+<!-- .element: style="font-size: 0.6em; margin-top: 5em; color: #000; display: block" -->
+</script></section>
+
+
+			</div>
+
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				fragments: true,
+
+				transition: 'convex', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
